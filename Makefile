@@ -9,11 +9,20 @@ program := $(build_dir)/bin/tm
 .PHONY: debug
 debug: $(program)
 
+.PHONY: cleandebug
+cleandebug:
+	rm -fr $(build_dir)
+
+.PHONY: clean
+clean:
+	rm -fr build
+
+.PHONY: run
+run: debug
+	$(program)
+
 $(program): $(objs) | $(build_dir)/bin
 	$(CC) $^ -o $@ $(LDFLAGS)
-
-$(build_dir)/%.o: src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
 
 $(objs): | $(build_dir)
 
@@ -26,11 +35,8 @@ $(build_dir)/bin:
 build:
 	mkdir build
 
-.PHONY: cleandebug
-cleandebug:
-	rm -fr $(build_dir)
+$(build_dir)/%.o: src/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-.PHONY: clean
-clean:
-	rm -fr build
-
+.PRECIOUS: src/main.c
+src/main.c: src/main.h
