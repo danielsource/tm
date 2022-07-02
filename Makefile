@@ -24,6 +24,9 @@ run: debug
 $(program): $(objs) | $(build_dir)/bin
 	$(CC) $^ -o $@ $(LDFLAGS)
 
+$(build_dir)/%.o: src/%.c $(wildcard src/*.h)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(objs): | $(build_dir)
 
 $(build_dir): | build
@@ -34,9 +37,3 @@ $(build_dir)/bin:
 
 build:
 	mkdir build
-
-$(build_dir)/%.o: src/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-.PRECIOUS: src/main.c
-src/main.c: src/main.h
