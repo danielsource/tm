@@ -1,24 +1,20 @@
-#include <SDL2/SDL.h>
-#include <stdio.h>
-#include <time.h>
-
 #define PROGNAME "tm"
 
-typedef enum Boolean { false = 0, true = 1 } bool;
-enum ExitStatus { SUCCESS = 0, FAILURE = 1, INITFAILURE = 2 };
-enum Millisecond { SECOND = 1000 };
+enum exitstatus { SUCCESS = 0, FAILURE = 1, INITFAILURE = 2 };
+enum millisecond { SECOND = 1000 };
+enum status { NOTRUNNING = 0, RUNNING = 1 };
 
-static struct Context {
+static struct context {
   SDL_Window *win;
   SDL_Surface *sfc;
   int argc;
   char **argv;
-  bool isrunning;
-  const unsigned char FPSDESIGNED;
-  const unsigned short WIDTH;
-  const unsigned short HEIGHT;
+  enum status status;
+  const unsigned int FPSDESIGNED;
+  const unsigned int WIDTH;
+  const unsigned int HEIGHT;
 }
-Ctx = { NULL, NULL, 0, NULL, 0, 30, 640, 480 };
+Ctx = { NULL, NULL, 0, NULL, NOTRUNNING, 30, 640, 480 };
 
 static void init(void);
 static void handleevents(void);

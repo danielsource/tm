@@ -6,20 +6,20 @@ LDFLAGS := -Wl,-Bstatic -pthread -lSDL2 -Wl,-Bdynamic -lm
 objs := $(subst src/,$(build_dir)/,$(patsubst %.c,%.o,$(wildcard src/*.c)))
 program := $(build_dir)/bin/tm
 
-.PHONY: debug
-debug: $(program)
-
-.PHONY: cleandebug
-cleandebug:
-	rm -fr $(build_dir)
+.PHONY: all
+all: $(program)
 
 .PHONY: clean
 clean:
-	rm -fr build
+	rm -fr $(build_dir)
 
 .PHONY: run
-run: debug
+run: all
 	$(program)
+
+.PHONY: run-st
+run-st: all
+	st -g 50x10+1300+700 -e $(program)
 
 $(program): $(objs) | $(build_dir)/bin
 	$(CC) $^ -o $@ $(LDFLAGS)

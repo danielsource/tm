@@ -1,15 +1,39 @@
+#include <SDL2/SDL.h>
+#include <stdio.h>
+#include <time.h>
+
 #include "main.h"
+#include "layout.h"
 
 int
 main(int argc, char **argv)
 {
   Uint64 ticks;
-  unsigned int delta,
-               delay = SECOND / Ctx.FPSDESIGNED;
-  Ctx.argc = argc,
+  unsigned int delta, delay = SECOND / Ctx.FPSDESIGNED;
+  /* LAYOUT STUFF */
+  struct lay_context lctx;
+  lay_id root, list;
+  float w, h;
+  /* ============ */
+  Ctx.argc = argc;
   Ctx.argv = argv;
   init();
-  while (Ctx.isrunning) {
+  /* LAYOUT STUFF */
+  lay_init(&lctx);
+  lay_reserve(&lctx, 20);
+  root = lay_createitem(&lctx);
+  lay_setsize(&lctx, root, Ctx.WIDTH, Ctx.HEIGHT);
+  lay_getsize(&lctx, root, &w, &h);
+  lay_setparentflags(&lctx, root, LAY_ROW);
+  printf("root: %fx%f\n", w, h);
+  list = lay_createitem(&lctx);
+  lay_insert(&lctx, root, list);
+  lay_setsize(&lctx, list, 400, 0);
+  lay_setchildflags(&lctx, list, LAY_VFILL);
+  lay_getsize(&lctx, list, &w, &h);
+  printf("list: %fx%f\n", w, h);
+  /* ============ */
+  while (Ctx.status == RUNNING) {
     ticks = SDL_GetTicks64();
     handleevents();
     delta = SDL_GetTicks64() - ticks;
@@ -20,7 +44,7 @@ main(int argc, char **argv)
   return SUCCESS;
 }
 
-static void
+void
 init(void)
 {
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -37,17 +61,17 @@ init(void)
     exit(INITFAILURE);
   }
   Ctx.sfc = SDL_GetWindowSurface(Ctx.win);
-  Ctx.isrunning = true;
+  Ctx.status = RUNNING;
 }
 
-static void
+void
 handleevents()
 {
   SDL_Event ev;
   while (SDL_PollEvent(&ev))
     switch (ev.type) {
     case SDL_QUIT:
-      Ctx.isrunning = false;
+      Ctx.status = NOTRUNNING;
       return;
     case SDL_KEYDOWN:
       handlekeydown(ev.key);
@@ -55,7 +79,7 @@ handleevents()
     }
 }
 
-static void
+void
 handlekeydown(SDL_KeyboardEvent kev)
 {
   switch (kev.keysym.scancode) {
@@ -76,7 +100,7 @@ handlekeydown(SDL_KeyboardEvent kev)
   }
   switch (kev.keysym.sym) {
   case SDLK_ESCAPE:
-    Ctx.isrunning = false;
+    Ctx.status = NOTRUNNING;
     return;
   case SDLK_INSERT:
     printscreen();
@@ -84,7 +108,7 @@ handlekeydown(SDL_KeyboardEvent kev)
   }
 }
 
-static void
+void
 printscreen(void)
 {
   enum { sz = 24 };
@@ -102,7 +126,7 @@ printscreen(void)
   puts(filename);
 }
 
-static void
+void
 quit(void)
 {
   SDL_DestroyWindow(Ctx.win);
