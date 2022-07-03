@@ -9,12 +9,11 @@ static struct context {
   SDL_Surface *sfc;
   int argc;
   char **argv;
-  enum status status;
-  const unsigned int FPSDESIGNED;
-  const unsigned int WIDTH;
-  const unsigned int HEIGHT;
-}
-Ctx = { NULL, NULL, 0, NULL, NOTRUNNING, 30, 640, 480 };
+  enum status flags;
+  const int FPSDESIGNED;
+  const int WIDTH;
+  const int HEIGHT;
+} Ctx = { NULL, NULL, 0, NULL, NOTRUNNING, 60, 640, 480 };
 
 static void init(void);
 static void handleevents(void);

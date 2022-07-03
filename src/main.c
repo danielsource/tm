@@ -12,28 +12,29 @@ main(int argc, char **argv)
   unsigned int delta, delay = SECOND / Ctx.FPSDESIGNED;
   /* LAYOUT STUFF */
   struct lay_context lctx;
-  lay_id root, list;
-  float w, h;
+  lay_id root, list, content;
+  /* int w, h; */
   /* ============ */
   Ctx.argc = argc;
   Ctx.argv = argv;
   init();
-  /* LAYOUT STUFF */
+  puts("\nLAYOUT STUFF ============\n");
   lay_init(&lctx);
   lay_reserve(&lctx, 20);
   root = lay_createitem(&lctx);
   lay_setsize(&lctx, root, Ctx.WIDTH, Ctx.HEIGHT);
-  lay_getsize(&lctx, root, &w, &h);
   lay_setparentflags(&lctx, root, LAY_ROW);
-  printf("root: %fx%f\n", w, h);
   list = lay_createitem(&lctx);
   lay_insert(&lctx, root, list);
   lay_setsize(&lctx, list, 400, 0);
   lay_setchildflags(&lctx, list, LAY_VFILL);
-  lay_getsize(&lctx, list, &w, &h);
-  printf("list: %fx%f\n", w, h);
-  /* ============ */
-  while (Ctx.status == RUNNING) {
+  lay_setparentflags(&lctx, list, LAY_COLUMN);
+  content = lay_createitem(&lctx);
+  lay_insert(&lctx, root, content);
+  lay_setchildflags(&lctx, content, LAY_HFILL | LAY_VFILL);
+  lay_run(&lctx);
+  puts("\nLAYOUT STUFF ============\n");
+  while (Ctx.flags & RUNNING) {
     ticks = SDL_GetTicks64();
     handleevents();
     delta = SDL_GetTicks64() - ticks;
@@ -61,7 +62,7 @@ init(void)
     exit(INITFAILURE);
   }
   Ctx.sfc = SDL_GetWindowSurface(Ctx.win);
-  Ctx.status = RUNNING;
+  Ctx.flags = RUNNING;
 }
 
 void
@@ -71,7 +72,7 @@ handleevents()
   while (SDL_PollEvent(&ev))
     switch (ev.type) {
     case SDL_QUIT:
-      Ctx.status = NOTRUNNING;
+      Ctx.flags = NOTRUNNING;
       return;
     case SDL_KEYDOWN:
       handlekeydown(ev.key);
@@ -100,7 +101,7 @@ handlekeydown(SDL_KeyboardEvent kev)
   }
   switch (kev.keysym.sym) {
   case SDLK_ESCAPE:
-    Ctx.status = NOTRUNNING;
+    Ctx.flags = NOTRUNNING;
     return;
   case SDLK_INSERT:
     printscreen();
