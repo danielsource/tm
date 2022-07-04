@@ -4,7 +4,9 @@
 #include "layout.h"
 
 static void lay_reallocitems(struct lay_context *ctx);
-static void lay_appendp(struct lay_item *siblingp, lay_id later, struct lay_item *laterp);
+static void lay_appendp(struct lay_item *siblingp, lay_id child, struct lay_item *childp);
+static void lay_calcsize(struct lay_context *ctx, lay_id item, int dim);
+static void lay_arrange(struct lay_context *ctx, lay_id item, int dim);
 
 void
 lay_init(struct lay_context *ctx)
@@ -55,8 +57,8 @@ void
 lay_setsize(struct lay_context *ctx, lay_id item, int width, int height)
 {
   struct lay_item *itemp = &ctx->items[item];
-  itemp->width = width;
-  itemp->height = height;
+  itemp->size[0] = width;
+  itemp->size[1] = height;
   if (width == 0)
     itemp->flags &= ~LAY_HFIXED;
   else
@@ -71,8 +73,8 @@ void
 lay_getsize(struct lay_context *ctx, lay_id item, int *widthp, int *heightp)
 {
   struct lay_item *itemp = &ctx->items[item];
-  *widthp = itemp->width;
-  *heightp = itemp->height;
+  *widthp = itemp->size[0];
+  *heightp = itemp->size[1];
 }
 
 void
@@ -80,38 +82,34 @@ lay_insert(struct lay_context *ctx, lay_id parent, lay_id child)
 {
   struct lay_item *parentp = &ctx->items[parent];
   struct lay_item *childp = &ctx->items[child];
-  struct lay_item *nextp;
-  lay_id next;
+  struct lay_item *siblingp;
+  lay_id sibling;
   if (parentp->firstchild == LAY_INVALID) {
     parentp->firstchild = child;
     childp->flags |= LAY_INSERTED;
     return;
   }
-  next = parentp->firstchild;
-  nextp = &ctx->items[next];
-  for (;;) {
-    next = nextp->nextsibling;
-    if (next == LAY_INVALID)
-      break;
-    nextp = &ctx->items[next];
+  for (sibling = parentp->firstchild; sibling != LAY_INVALID;) {
+    siblingp = &ctx->items[sibling];
+    sibling = siblingp->nextsibling;
   }
-  lay_appendp(nextp, child, childp);
+  lay_appendp(siblingp, child, childp);
 }
 
 void
-lay_appendp(struct lay_item *siblingp, lay_id later, struct lay_item *laterp)
+lay_appendp(struct lay_item *siblingp, lay_id child, struct lay_item *childp)
 {
-  laterp->nextsibling = siblingp->nextsibling;
-  laterp->flags |= LAY_INSERTED;
-  siblingp->nextsibling = later;
+  childp->nextsibling = siblingp->nextsibling;
+  childp->flags |= LAY_INSERTED;
+  siblingp->nextsibling = child;
 }
 
 void
-lay_append(struct lay_context *ctx, lay_id sibling, lay_id later)
+lay_append(struct lay_context *ctx, lay_id sibling, lay_id child)
 {
   struct lay_item *siblingp = &ctx->items[sibling];
-  struct lay_item *laterp = &ctx->items[later];
-  lay_appendp(siblingp, later, laterp);
+  struct lay_item *childp = &ctx->items[child];
+  lay_appendp(siblingp, child, childp);
 }
 
 void
@@ -138,5 +136,33 @@ lay_run(struct lay_context *ctx)
 void
 lay_runitem(struct lay_context *ctx, lay_id item)
 {
-  /* do stuff */
+  lay_calcsize(ctx, item, 0);
+  lay_arrange(ctx, item, 0);
+  lay_calcsize(ctx, item, 1);
+  lay_arrange(ctx, item, 1);
+}
+
+void
+lay_calcsize(struct lay_context *ctx, lay_id item, int dim)
+{
+  struct lay_item *itemp = &ctx->items[item];
+  struct lay_item *childp;
+  lay_id child;
+  int sz;
+  for (child = itemp->firstchild; child != LAY_INVALID;) {
+    lay_calcsize(ctx, child, dim); /* NOTE: RECURSION */
+    childp = &ctx->items[item];
+    child = childp->nextsibling;
+  }
+  ctx->rects[item][dim] = itemp->margins[dim];
+  if (itemp->size[dim] != 0) {
+    ctx->rects[item][2 + dim] = itemp->size[dim];
+    return;
+  }
+}
+
+void
+lay_arrange(struct lay_context *ctx, lay_id item, int dim)
+{
+
 }

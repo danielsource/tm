@@ -2,41 +2,22 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "main.h"
 #include "layout.h"
+#include "main.h"
 
 int
 main(int argc, char **argv)
 {
   Uint64 ticks;
   unsigned int delta, delay = SECOND / Ctx.FPSDESIGNED;
-  /* LAYOUT STUFF */
-  struct lay_context lctx;
-  lay_id root, list, content;
-  /* int w, h; */
-  /* ============ */
   Ctx.argc = argc;
   Ctx.argv = argv;
   init();
-  puts("\nLAYOUT STUFF ============\n");
-  lay_init(&lctx);
-  lay_reserve(&lctx, 20);
-  root = lay_createitem(&lctx);
-  lay_setsize(&lctx, root, Ctx.WIDTH, Ctx.HEIGHT);
-  lay_setparentflags(&lctx, root, LAY_ROW);
-  list = lay_createitem(&lctx);
-  lay_insert(&lctx, root, list);
-  lay_setsize(&lctx, list, 400, 0);
-  lay_setchildflags(&lctx, list, LAY_VFILL);
-  lay_setparentflags(&lctx, list, LAY_COLUMN);
-  content = lay_createitem(&lctx);
-  lay_insert(&lctx, root, content);
-  lay_setchildflags(&lctx, content, LAY_HFILL | LAY_VFILL);
-  lay_run(&lctx);
-  puts("\nLAYOUT STUFF ============\n");
   while (Ctx.flags & RUNNING) {
     ticks = SDL_GetTicks64();
     handleevents();
+    update();
+    render();
     delta = SDL_GetTicks64() - ticks;
     if (delta < delay)
       SDL_Delay(delay - delta);
@@ -63,10 +44,32 @@ init(void)
   }
   Ctx.sfc = SDL_GetWindowSurface(Ctx.win);
   Ctx.flags = RUNNING;
+  initlayout();
 }
 
 void
-handleevents()
+initlayout(void)
+{
+  struct lay_context *lctx = &Ctx.lctx;
+  lay_id root, list, content;
+  lay_init(lctx);
+  lay_reserve(lctx, 20);
+  root = lay_createitem(lctx);
+  lay_setsize(lctx, root, Ctx.WIDTH, Ctx.HEIGHT);
+  lay_setparentflags(lctx, root, LAY_ROW);
+  list = lay_createitem(lctx);
+  lay_insert(lctx, root, list);
+  lay_setsize(lctx, list, 400, 0);
+  lay_setchildflags(lctx, list, LAY_VFILL);
+  lay_setparentflags(lctx, list, LAY_COLUMN);
+  content = lay_createitem(lctx);
+  lay_insert(lctx, root, content);
+  lay_setchildflags(lctx, content, LAY_HFILL | LAY_VFILL);
+  lay_run(lctx);
+}
+
+void
+handleevents(void)
 {
   SDL_Event ev;
   while (SDL_PollEvent(&ev))
@@ -107,6 +110,16 @@ handlekeydown(SDL_KeyboardEvent kev)
     printscreen();
     return;
   }
+}
+
+void
+update(void)
+{
+}
+
+void
+render(void)
+{
 }
 
 void

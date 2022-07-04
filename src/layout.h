@@ -1,6 +1,8 @@
 #ifndef LAYOUT_H
 #define LAYOUT_H
 
+#define LAY_LENGTH(ARR) sizeof(ARR) / sizeof(ARR[0])
+
 typedef unsigned int lay_id;
 #define LAY_INVALID (lay_id)-1
 
@@ -43,12 +45,8 @@ struct lay_item {
   enum lay_flags flags;
   lay_id firstchild;
   lay_id nextsibling;
-  int margintop;
-  int marginright;
-  int marginbottom;
-  int marginleft;
-  int width;
-  int height;
+  int margins[4];
+  int size[2];
 };
 
 struct lay_context {
@@ -69,6 +67,5 @@ void lay_setparentflags(struct lay_context *ctx, lay_id item, enum lay_parent fl
 void lay_setchildflags(struct lay_context *ctx, lay_id item, enum lay_child flags);
 void lay_run(struct lay_context *ctx);
 void lay_runitem(struct lay_context *ctx, lay_id item);
-
 
 #endif /* LAYOUT_H */
