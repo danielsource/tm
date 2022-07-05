@@ -1,4 +1,1 @@
-build
-*.cbp
-*.layout
-*.save
+build/

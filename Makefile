@@ -1,39 +1,35 @@
-include os.mk
+CC := gcc
+LD := gcc
+CFLAGS := -std=c99 -pedantic -Wall -Wextra
+LDFLAGS := -lraylib -lm
 
-CFLAGS := $(CCFLAGS) -I/usr/include/SDL2 -D_REENTRANT -Wall -Wextra -ansi -pedantic -O0 -ggdb
-LDFLAGS := -Wl,-Bstatic -pthread -lSDL2 -Wl,-Bdynamic -lm
+objs_dir := build
+program := $(objs_dir)/tm
+srcs := $(wildcard src/*.c)
+heads := $(wildcard src/*.h)
+objs := $(patsubst src/%.c,$(objs_dir)/%.o,$(srcs))
 
-objs := $(subst src/,$(build_dir)/,$(patsubst %.c,%.o,$(wildcard src/*.c)))
-program := $(build_dir)/bin/tm
-
-.PHONY: all
 all: $(program)
+$(program): $(objs)
+	$(LD) -o $@ $^ $(LDFLAGS)
 
-.PHONY: clean
+$(objs_dir)/%.o: src/%.c src/%.h src/main.h
+	$(CC) -c $< $(CFLAGS) -o $@
+
+$(objs_dir)/main.o: src/main.c $(heads)
+	$(CC) -c $< $(CFLAGS) -o $@
+
+$(objs): | $(objs_dir)
+$(objs_dir):
+	mkdir $(objs_dir)
+
 clean:
-	rm -fr $(build_dir)
+ifneq (,$(wildcard $(objs_dir)))
+	rm -f $(objs_dir)/*
+	rmdir $(objs_dir)
+endif
 
-.PHONY: run
-run: all
-	$(program)
+run: $(program)
+	@./$(program)
 
-.PHONY: run-st
-run-st: all
-	st -g 50x10+1300+700 -e $(program)
-
-$(program): $(objs) | $(build_dir)/bin
-	$(CC) $^ -o $@ $(LDFLAGS)
-
-$(build_dir)/%.o: src/%.c $(wildcard src/*.h)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(objs): | $(build_dir)
-
-$(build_dir): | build
-	mkdir $(build_dir)
-
-$(build_dir)/bin:
-	mkdir $(build_dir)/bin
-
-build:
-	mkdir build
+.PHONY: all clean run
