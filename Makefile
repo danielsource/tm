@@ -1,6 +1,6 @@
 CC := gcc
 LD := gcc
-CFLAGS := -std=c99 -pedantic -Wall -Wextra
+CFLAGS := -std=c99 -O0 -ggdb -pedantic -Wall -Wextra
 LDFLAGS := -lraylib -lm
 
 objs_dir := build
@@ -11,22 +11,22 @@ objs := $(patsubst src/%.c,$(objs_dir)/%.o,$(srcs))
 
 all: $(program)
 $(program): $(objs)
-	$(LD) -o $@ $^ $(LDFLAGS)
+	@echo LD $@
+	@$(LD) -o $@ $^ $(LDFLAGS)
 
-$(objs_dir)/%.o: src/%.c src/%.h src/main.h
-	$(CC) -c $< $(CFLAGS) -o $@
-
-$(objs_dir)/main.o: src/main.c $(heads)
-	$(CC) -c $< $(CFLAGS) -o $@
+$(objs_dir)/%.o: src/%.c src/%.h
+	@echo CC $@
+	@$(CC) -c $< $(CFLAGS) -o $@
 
 $(objs): | $(objs_dir)
 $(objs_dir):
-	mkdir $(objs_dir)
+	@mkdir $(objs_dir) \
 
 clean:
 ifneq (,$(wildcard $(objs_dir)))
-	rm -f $(objs_dir)/*
-	rmdir $(objs_dir)
+	@echo CLEAN
+	@rm -f $(objs_dir)/*
+	@rmdir $(objs_dir)
 endif
 
 run: $(program)

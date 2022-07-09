@@ -1,25 +1,23 @@
-#include <stdint.h>
+#pragma once
 
-#include <raylib.h>
+#include "raylib.h"
 
-struct screen {
-  int width;
-  int height;
-};
-
-static struct global_context {
-  uint32_t flags;
-  struct screen screen;
-} Ctx;
+#include "layout.h"
 
 #define PROGRAM_NAME "tm"
 
-enum status {
-  NOT_RUNNING = 0x00,
-  RUNNING     = 0x01
+struct colors {
+  Color primarybg;
+  Color secondarybg;
+  Color tertiarybg;
+  Color primaryfg;
+  Color secondaryfg;
+  Color tertiaryfg;
+  Color light;
+  Color dark;
 };
 
-static void init(void);
-static void update(void);
-static void draw(void);
-static int quit(int);
+extern struct context {
+  struct colors colors;
+  struct lay_context *layout;
+} Ctx;
