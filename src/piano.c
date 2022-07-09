@@ -10,7 +10,6 @@ piano(int octaves) {
 }
 
 void
-piano_draw(struct lay_item *self) {
-  struct lay_item *item = self;
-  DrawRectangleRec(item->rect, Ctx.colors.secondarybg);
+piano_draw(struct lay_item piano) {
+  DrawRectangleRec(piano.rect, Ctx.colors.secondarybg);
 }

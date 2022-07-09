@@ -10,7 +10,6 @@ guitar(int frets) {
 }
 
 void
-guitar_draw(struct lay_item *self) {
-  struct lay_item *item = self;
-  DrawRectangleRec(item->rect, Ctx.colors.secondarybg);
+guitar_draw(struct lay_item guitar) {
+  DrawRectangleRec(guitar.rect, Ctx.colors.secondarybg);
 }

@@ -59,7 +59,7 @@ lay_draw(struct lay_context *ctx) {
   for (int i = 0; i < ctx->count; i++) {
     struct lay_item item = ctx->items[i];
     if (item.draw)
-      item.draw(&item);
+      item.draw(item);
   }
 }
 

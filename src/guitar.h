@@ -9,4 +9,4 @@ struct guitar {
 };
 
 struct guitar guitar(int octaves);
-void guitar_draw(struct lay_item *self);
+void guitar_draw(struct lay_item guitar);

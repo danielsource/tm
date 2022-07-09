@@ -10,8 +10,6 @@
 
 enum lay_type { lay_piano, lay_guitar, lay_generic };
 
-struct guitar;
-struct piano;
 union lay_u {
   struct guitar guitar;
   struct piano piano;
@@ -20,7 +18,7 @@ union lay_u {
 struct lay_item {
   enum lay_type type;
   Rectangle rect;
-  void (*draw)(struct lay_item *self);
+  void (*draw)(struct lay_item item);
   union lay_u this;
 };
 

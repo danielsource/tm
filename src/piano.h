@@ -9,4 +9,4 @@ struct piano {
 };
 
 struct piano piano(int octaves);
-void piano_draw(struct lay_item *self);
+void piano_draw(struct lay_item piano);
