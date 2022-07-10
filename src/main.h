@@ -2,9 +2,9 @@
 
 #include "raylib.h"
 
-#include "layout.h"
-
 #define PROGRAM_NAME "tm"
+
+extern struct context Ctx;
 
 struct colors {
   Color primarybg;
@@ -17,7 +17,6 @@ struct colors {
   Color dark;
 };
 
-extern struct context {
+struct context {
   struct colors colors;
-  struct lay_context *layout;
-} Ctx;
+};

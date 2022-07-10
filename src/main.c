@@ -1,9 +1,7 @@
-#include <stdio.h>
-
 #include "raylib.h"
 
-#include "layout.h"
 #include "main.h"
+#include "draw.h"
 
 struct context Ctx;
 
@@ -38,17 +36,6 @@ void init(void) {
     .light       = GetColor(0xFFFFFFFF),
     .dark        = GetColor(0x000000FF),
   };
-  Ctx.layout = lay_context((Rectangle) { 0, 0, screen_width, screen_height }, 10);
-  lay_additem(Ctx.layout,
-               lay_piano, (Rectangle) { 0, 0, 300, 80 },
-               (union lay_u) { .piano = piano(3) });
-  lay_additem(Ctx.layout,
-               lay_guitar, (Rectangle) { 0, 0, 300, 80 },
-               (union lay_u) { .guitar = guitar(19) });
-  lay_additem(Ctx.layout,
-               lay_guitar, (Rectangle) { 0, 0, 300, 80 },
-               (union lay_u) { .guitar = guitar(19) });
-  lay_makelist(Ctx.layout, 40);
   InitWindow(screen_width, screen_height, PROGRAM_NAME);
   SetTargetFPS(target_fps);
 }
@@ -57,7 +44,7 @@ void input(void) {
   int note,
     key = GetKeyPressed();
   switch (key) {
-  case KEY_NULL:  goto nop;
+  case KEY_NULL:             break;
   case KEY_Q:     note = 24; break;
   case KEY_TWO:   note = 25; break;
   case KEY_W:     note = 26; break;
@@ -85,9 +72,7 @@ void input(void) {
   case KEY_COMMA: note = 48; break;
   default:        note = -1;
   }
-  printf("%d\n", note);
-nop:
-  if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+  if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) {
     Color auxbg = Ctx.colors.primarybg,
       auxfg = Ctx.colors.primaryfg;
     Ctx.colors.primarybg = Ctx.colors.secondarybg;
@@ -103,11 +88,10 @@ void update(void) {
 void draw(void) {
   BeginDrawing(); {
     ClearBackground(Ctx.colors.primarybg);
-    lay_draw(Ctx.layout);
+    draw_piano(0, 0, 300, 80);
   } EndDrawing();
 }
 
 void quit(void) {
-  lay_destroy(Ctx.layout);
   CloseWindow();
 }
