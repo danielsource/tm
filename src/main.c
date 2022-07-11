@@ -1,9 +1,9 @@
-#include "raylib.h"
+#include "raylib.h" // The library that makes magic happen on the screen.
 
 #include "main.h"
-#include "draw.h"
+#include "piano_draw.h"
 
-struct context Ctx;
+struct context Ctx; // Global struct that holds variables used in multiple functions.
 
 static void init(void);
 static void input(void);
@@ -23,11 +23,10 @@ int main(void) {
 }
 
 void init(void) {
-  int screen_width = 640,
-    screen_height = 480,
+  int width = 640, height = 480, // 640x480 pixels window.
     target_fps = 60;
   Ctx.colors = (struct colors) {
-    .primarybg   = GetColor(0x7CBFDAFF),
+    .primarybg   = GetColor(0x7CBFDAFF), // The hexadecimal color value #7cbfda.
     .secondarybg = GetColor(0xDB7A7AFF),
     .tertiarybg  = GetColor(0xFFFFFFFF),
     .primaryfg   = GetColor(0x000000FF),
@@ -36,7 +35,7 @@ void init(void) {
     .light       = GetColor(0xFFFFFFFF),
     .dark        = GetColor(0x000000FF),
   };
-  InitWindow(screen_width, screen_height, PROGRAM_NAME);
+  InitWindow(width, height, PROGRAM_NAME);
   SetTargetFPS(target_fps);
 }
 
@@ -45,9 +44,9 @@ void input(void) {
     key = GetKeyPressed();
   switch (key) {
   case KEY_NULL:             break;
-  case KEY_Q:     note = 24; break;
-  case KEY_TWO:   note = 25; break;
-  case KEY_W:     note = 26; break;
+  case KEY_Q:     note = 24; break; // 24 is C3,
+  case KEY_TWO:   note = 25; break; // 25 is C#3,
+  case KEY_W:     note = 26; break; // 26 is D3, and so on.
   case KEY_THREE: note = 27; break;
   case KEY_E:     note = 28; break;
   case KEY_R:     note = 29; break;
@@ -86,10 +85,10 @@ void update(void) {
 }
 
 void draw(void) {
-  BeginDrawing(); {
-    ClearBackground(Ctx.colors.primarybg);
-    draw_piano(0, 0, 300, 80);
-  } EndDrawing();
+  BeginDrawing();
+  ClearBackground(Ctx.colors.primarybg);
+  piano_draw(0, 0, 300, 80);
+  EndDrawing();
 }
 
 void quit(void) {
