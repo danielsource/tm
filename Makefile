@@ -1,10 +1,10 @@
 CC := gcc
 LD := gcc
-CFLAGS := -std=c99 -O0 -ggdb -pedantic -Wall -Wextra
+CFLAGS := -DDEBUG -std=c99 -O0 -ggdb -pedantic -Wall -Wextra
 LDFLAGS := -lraylib -lm
 
 objs_dir := build
-program := $(objs_dir)/tm
+program := tm
 srcs := $(wildcard src/*.c)
 heads := $(wildcard src/*.h)
 objs := $(patsubst src/%.c,$(objs_dir)/%.o,$(srcs))
@@ -25,6 +25,7 @@ $(objs_dir):
 clean:
 ifneq (,$(wildcard $(objs_dir)))
 	@echo CLEAN
+	@rm -f $(program)
 	@rm -f $(objs_dir)/*
 	@rmdir $(objs_dir)
 endif
