@@ -12,10 +12,11 @@ static void init(void);
 static void handle_input(void);
 static void update(void);
 static void draw(void);
-static void play(int length, int notes[length]);
+static void play(int len, int notes[len]);
 static void quit(void);
 
-int main(void) {
+int
+main(void) {
   init();
   while (!WindowShouldClose()) {
     handle_input();
@@ -27,8 +28,9 @@ int main(void) {
   return 0;
 }
 
-void init(void) {
-  Ctx.colors = (struct colors) {
+void
+init(void) {
+  Ctx.colors = (struct palette) {
     .primarybg   = GetColor(0x7CBFDAFF),
     .secondarybg = GetColor(0xDB7A7AFF),
     .tertiarybg  = GetColor(0xFFFFFFFF),
@@ -54,10 +56,11 @@ void init(void) {
   memset(Ctx.down.notes, NOTE_NULL, sizeof Ctx.down.notes);
   InitAudioDevice();
   struct piano *piano = &Ctx.elements[PIANO].u.piano;
-  char fmt[32 + 2] = "res/sounds/piano-88-keys/%02d.mp3";
+  enum { fn = 32, flag = 2 };
+  char fmt[fn + flag] = "res/sounds/piano-88-keys/%02d.mp3";
+  char filename[fn];
   for (int i=0; i<PIANO_KEYS; i++) {
-    char filename[32];
-    snprintf(filename, 32, fmt, i);
+    snprintf(filename, fn, fmt, i);
     piano->sounds[i] = LoadSound(filename);
   }
   InitWindow(640, 480, PROGRAM_NAME);
@@ -65,7 +68,8 @@ void init(void) {
   SetTargetFPS(60);
 }
 
-void handle_input(void) {
+void
+handle_input(void) {
   if (IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE)) {
     Color auxbg = Ctx.colors.primarybg,
       auxfg = Ctx.colors.primaryfg;
@@ -75,12 +79,11 @@ void handle_input(void) {
     Ctx.colors.secondaryfg = auxfg;
   }
   if (IsKeyPressed(KEY_TAB)) {
-    if (IsKeyDown(KEY_LEFT_SHIFT)) {
+    if (IsKeyDown(KEY_LEFT_SHIFT))
       Ctx.focused = Ctx.focused ?
         (Ctx.focused - 1) % ELEMENT_MAX : ELEMENT_MAX - 1;
-    } else {
+    else
       Ctx.focused = (Ctx.focused + 1) % ELEMENT_MAX;
-    }
     LOGINFO("changed focus to %s (%d/%d)",
             Ctx.elements[Ctx.focused].name,
             Ctx.focused+1, ELEMENT_MAX);
@@ -101,33 +104,39 @@ void handle_input(void) {
   }
 }
 
-void update(void) {
+void
+update(void) {
 }
 
-void draw(void) {
+void
+draw(void) {
   BeginDrawing();
   ClearBackground(Ctx.colors.primarybg);
   EndDrawing();
 }
 
-void play(int length, int notes[length]) {
+void
+play(int len, int notes[len]) {
   Sound *sounds;
+  int c4_transposing;
   switch (Ctx.focused) {
   case PIANO:
     sounds = Ctx.elements[PIANO].u.piano.sounds;
+    c4_transposing = 3;
     break;
   default:
     return;
   }
-  for (int i=0; i<length; i++) {
+  for (int i=0; i<len; i++) {
     if (notes[i] == NOTE_NULL)
       break;
-    PlaySoundMulti(sounds[notes[i] + 3]);
+    PlaySoundMulti(sounds[notes[i] + c4_transposing]);
     LOGINFO("playing %d", notes[i]);
   }
 }
 
-void quit(void) {
+void
+quit(void) {
   struct piano *piano = &Ctx.elements[PIANO].u.piano;
   StopSoundMulti();
   for (int i=0; i<PIANO_KEYS; i++) {

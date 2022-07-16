@@ -6,7 +6,7 @@
 
 #define PROGRAM_NAME "tm"
 
-struct colors {
+struct palette {
   Color primarybg;
   Color secondarybg;
   Color tertiarybg;
@@ -35,7 +35,14 @@ struct circle_of_fifths {
   int foo;
 };
 
-enum elementid { PIANO, GUITAR, NOTATION, CIRCLE_OF_FIFTHS, INPUTFIELD, ELEMENT_MAX };
+enum elementid {
+  PIANO,
+  GUITAR,
+  NOTATION,
+  CIRCLE_OF_FIFTHS,
+  INPUTFIELD,
+  ELEMENT_MAX
+};
 
 struct element {
   enum elementid id;
@@ -53,7 +60,7 @@ struct element {
 enum mode { MARK, PLAY };
 
 struct context {
-  struct colors colors;
+  struct palette colors;
   struct element elements[ELEMENT_MAX];
   struct key2note_buffer pressed;
   struct key2note_buffer down;

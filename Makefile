@@ -20,7 +20,7 @@ $(objs_dir)/%.o: src/%.c src/%.h
 
 $(objs): | $(objs_dir)
 $(objs_dir):
-	@mkdir $(objs_dir) \
+	@mkdir $(objs_dir)
 
 clean:
 ifneq (,$(wildcard $(objs_dir)))
@@ -30,7 +30,10 @@ ifneq (,$(wildcard $(objs_dir)))
 	@rmdir $(objs_dir)
 endif
 
+valgrind: $(program)
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=$(objs_dir)/valgrind.log ./$(program)
+
 run: $(program)
 	@./$(program)
 
-.PHONY: all clean run
+.PHONY: all clean valgrind run
