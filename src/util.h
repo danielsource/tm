@@ -4,9 +4,10 @@
 #define PROGRAM_NAME "util"
 #endif
 
-#define MAX(A, B)               ((A) > (B) ? (A) : (B))
-#define MIN(A, B)               ((A) < (B) ? (A) : (B))
-#define BETWEEN(X, A, B)        ((A) <= (X) && (X) <= (B))
+#define MAX(A, B)        ((A) > (B) ? (A) : (B))
+#define MIN(A, B)        ((A) < (B) ? (A) : (B))
+#define BETWEEN(X, A, B) ((A) <= (X) && (X) <= (B))
+#define LENGTH(ARR)      ((int) (sizeof ARR / sizeof ARR[0]))
 
 #ifdef DEBUG
 #include <stdio.h>

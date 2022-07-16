@@ -4,7 +4,7 @@
 
 #include "keyboard.h"
 #include "main.h"
-#include "util.inc"
+#include "util.h"
 
 void key2note(void) {
   int changed = 0;

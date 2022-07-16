@@ -6,8 +6,6 @@
 
 #define PROGRAM_NAME "tm"
 
-extern struct context Ctx;
-
 struct colors {
   Color primarybg;
   Color secondarybg;
@@ -19,7 +17,9 @@ struct colors {
   Color dark;
 };
 
+#define PIANO_KEYS 88
 struct piano {
+  Sound sounds[PIANO_KEYS];
   int octaves;
 };
 
@@ -33,13 +33,6 @@ struct notation {
 
 struct circle_of_fifths {
   int foo;
-};
-
-#define INPUTFIELD_TEXT_MAX 64
-
-struct inputfield {
-  int count;
-  char text[INPUTFIELD_TEXT_MAX];
 };
 
 enum elementid { PIANO, GUITAR, NOTATION, CIRCLE_OF_FIFTHS, INPUTFIELD, ELEMENT_MAX };
@@ -67,3 +60,5 @@ struct context {
   enum elementid focused;
   enum mode mode;
 };
+
+extern struct context Ctx;
