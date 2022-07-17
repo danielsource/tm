@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "raylib.h" // The library that makes magic happen on the screen.
 
 #include "main.h"
@@ -52,12 +50,10 @@ init(void) {
     .name="circle of fifths", .id=CIRCLE_OF_FIFTHS };
   Ctx.elements[INPUTFIELD] = (struct element) {
     .name="input field", .id=INPUTFIELD };
-  memset(Ctx.down.keys, KEY_NULL, sizeof Ctx.down.keys);
-  memset(Ctx.down.notes, NOTE_NULL, sizeof Ctx.down.notes);
   InitAudioDevice();
   struct piano *piano = &Ctx.elements[PIANO].u.piano;
   enum { fn = 32, flag = 2 };
-  char fmt[fn + flag] = "res/sounds/piano-88-keys/%02d.mp3";
+  const char fmt[fn + flag] = "res/sounds/piano-88-keys/%02d.mp3";
   char filename[fn];
   for (int i=0; i<PIANO_KEYS; i++) {
     snprintf(filename, fn, fmt, i);
@@ -80,7 +76,7 @@ handle_input(void) {
   }
   if (IsKeyPressed(KEY_TAB)) {
     if (IsKeyDown(KEY_LEFT_SHIFT))
-      Ctx.focused = Ctx.focused ?
+      Ctx.focused = (Ctx.focused) ?
         (Ctx.focused - 1) % ELEMENT_MAX : ELEMENT_MAX - 1;
     else
       Ctx.focused = (Ctx.focused + 1) % ELEMENT_MAX;
@@ -137,11 +133,9 @@ play(int len, int notes[len]) {
 
 void
 quit(void) {
-  struct piano *piano = &Ctx.elements[PIANO].u.piano;
   StopSoundMulti();
-  for (int i=0; i<PIANO_KEYS; i++) {
-    UnloadSound(piano->sounds[i]);
-  }
+  for (int i=0; i<PIANO_KEYS; i++)
+    UnloadSound(Ctx.elements[PIANO].u.piano.sounds[i]);
   CloseAudioDevice();
   CloseWindow();
 }

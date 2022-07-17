@@ -8,9 +8,17 @@
 
 void
 key2note(void) {
-  int changed = 0;
-  memset(Ctx.pressed.keys, KEY_NULL, sizeof Ctx.pressed.keys);
-  memset(Ctx.pressed.notes, NOTE_NULL, sizeof Ctx.pressed.notes);
+  static int changed = -1;
+  if (changed == -1) {
+    memset(Ctx.down.keys, KEY_NULL, sizeof Ctx.down.keys);
+    memset(Ctx.down.notes, NOTE_NULL, sizeof Ctx.down.notes);
+  }
+  if (changed) {
+    memset(Ctx.pressed.keys, KEY_NULL, sizeof Ctx.pressed.keys);
+    memset(Ctx.pressed.notes, NOTE_NULL, sizeof Ctx.pressed.notes);
+    changed = 0;
+    LOGINFO("memset in Ctx.pressed", 0);
+  }
   for (int key, note; (key = GetKeyPressed()) != KEY_NULL;) {
     if ((note = lookup_note(key)) == NOTE_NULL)
       break;
