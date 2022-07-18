@@ -1,7 +1,7 @@
 all: musical
 
 musical: musical.c
-	gcc -std=c99 -ggdb -O0 -o $@ $^ -lraylib -lm -Wall -Wextra -Wpedantic
+	chibicc -std=c99 -ggdb -O0 -o $@ $^ -lraylib -lm -Wall -Wextra -Wpedantic
 
 run: all
 	@./musical

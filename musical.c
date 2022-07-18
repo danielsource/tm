@@ -86,9 +86,10 @@ main() {
     N_INSTRUMENTS,
     MUSICAL_NOTATION,
     CIRCLE_OF_FIFTHS,
-    INPUT_OUTPUT_FIELD
+    INPUT_OUTPUT_FIELD,
+    N_ITEMS
   };
-  enum {
+  enum scalar {
     HUMAN_FINGERS = 10,
     PIANO_KEYS = 88
   };
