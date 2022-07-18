@@ -1,8 +1,5 @@
-// Main function on the end of this file.
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "raylib.h"
 
@@ -14,7 +11,6 @@
 
 void
 handle_keyboard(int pressed_once[], int pressed[], int len) {
-  /* memset(pressed_once, 0, sizeof pressed_once[0] * len); */
   for (int i=0, key; i<len; i++) {
     key = GetKeyPressed();
     pressed_once[i] = key;
@@ -111,6 +107,7 @@ main() {
   };
   InitAudioDevice();
   InitWindow(640, 480, PROGRAM_TITLE);
+  SetWindowPosition(20, 60);
   SetTargetFPS(60);
   while (!WindowShouldClose()) {
     handle_keyboard(pressed_once, pressed, HUMAN_FINGERS);
