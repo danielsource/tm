@@ -6,9 +6,6 @@
 #define PROGRAM_TITLE "Musical"
 #define PROGRAM_NAME "musical"
 
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wunused-variable"
-
 void
 handle_keyboard(int pressed_once[], int pressed[], int len) {
   for (int i=0, key; i<len; i++) {
@@ -23,7 +20,7 @@ Sound *
 getsound(const char *file_fmt, int idx) {
   enum { maxlen = 128 };
   Sound *sound = malloc(sizeof (Sound));
-  char *file = malloc(maxlen * sizeof (char));
+  char file[maxlen];
   snprintf(file, maxlen, file_fmt, idx);
   *sound = LoadSound(file);
   return sound;
@@ -31,9 +28,7 @@ getsound(const char *file_fmt, int idx) {
 
 void
 play(int notes[], int len, Sound *sounds[], const char *file_fmt) {
-  for (int i=0; i<len; i++) {
-    if (!notes[i])
-      return;
+  for (int i=0; notes[i] && i<len; i++) {
     Sound *sound = sounds[notes[i] - 1];
     if (!sound) {
       sound = getsound(file_fmt, notes[i]);
@@ -131,4 +126,11 @@ main() {
   StopSoundMulti();
   CloseAudioDevice();
   CloseWindow();
+  for (int i=0; i<N_INSTRUMENTS; i++)
+    for (int j=0; j<PIANO_KEYS; j++)
+      if (sounds[i][j]) {
+        UnloadSound(*sounds[i][j]);
+        free(sounds[i][j]);
+      }
+  return 0;
 }
