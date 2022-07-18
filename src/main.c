@@ -10,7 +10,7 @@ static void init(void);
 static void handle_input(void);
 static void update(void);
 static void draw(void);
-static void play(int len, int notes[len]);
+static void play(int len, int notes[]);
 static void quit(void);
 
 int
@@ -112,7 +112,7 @@ draw(void) {
 }
 
 void
-play(int len, int notes[len]) {
+play(int len, int notes[]) {
   Sound *sounds;
   int c4_transposing;
   switch (Ctx.focused) {

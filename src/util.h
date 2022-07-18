@@ -7,7 +7,7 @@
 #define MAX(A, B)        ((A) > (B) ? (A) : (B))
 #define MIN(A, B)        ((A) < (B) ? (A) : (B))
 #define BETWEEN(X, A, B) ((A) <= (X) && (X) <= (B))
-#define LENGTH(ARR)      ((int) (sizeof ARR / sizeof ARR[0]))
+#define LENGTH(ARR)      ((int) (sizeof (ARR) / sizeof (ARR)[0]))
 
 #ifdef DEBUG
 #include <stdio.h>
@@ -17,9 +17,9 @@
           "%s:%d:0: info: " FMT "\n", __FILE__, __LINE__, __VA_ARGS__)
 #define LOGINFO_ARR(ARR, LEN, FMTHEAD, FMTBODY) \
   do {                                          \
-    fprintf(stderr, FMTHEAD);                   \
-    for (int i=0; i<LEN; i++) {                 \
-      fprintf(stderr, FMTBODY, ARR[i]);         \
+    fprintf(stderr, (FMTHEAD));                 \
+    for (int i=0; i<(LEN); i++) {               \
+      fprintf(stderr, (FMTBODY), (ARR)[i]);     \
     }                                           \
     fprintf(stderr, "\n");                      \
   } while(0)

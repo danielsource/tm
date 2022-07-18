@@ -1,6 +1,6 @@
-CC := gcc
-LD := gcc
-CFLAGS := -DDEBUG -std=c99 -O0 -ggdb -pedantic -Wall -Wextra
+CC := chibicc
+LD := chibicc
+CFLAGS := -DDEBUG -std=c99 -O0 -ggdb -Wall -Wextra
 LDFLAGS := -lraylib -lm
 
 objs_dir := build
@@ -14,7 +14,7 @@ $(program): $(objs)
 	@echo LD $@
 	@$(LD) -o $@ $^ $(LDFLAGS)
 
-$(objs_dir)/%.o: src/%.c src/%.h
+$(objs_dir)/%.o: src/%.c src/%.h src/util.h Makefile
 	@echo CC $@
 	@$(CC) -c $< $(CFLAGS) -o $@
 
