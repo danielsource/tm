@@ -4,7 +4,64 @@
 #include "raylib.h"
 
 #define PROGRAM_TITLE "Musical"
-#define PROGRAM_NAME "musical"
+#define PROGRAM_NAME  "musical"
+
+enum item {
+  PIANO,
+  GUITAR,
+  N_INSTRUMENTS,
+  MUSICAL_NOTATION,
+  CIRCLE_OF_FIFTHS,
+  INPUT_OUTPUT_FIELD,
+  N_ITEMS
+};
+
+enum scalar {
+  WINDOW_WIDTH  = 640,
+  WINDOW_HEIGHT = 480,
+  WINDOW_POS_X  = 20,
+  WINDOW_POS_Y  = 60,
+  HUMAN_FINGERS = 10,
+  PIANO_KEYS    = 88,
+  NOTE_NAME_MAXLEN = 6 // Including null char.
+};
+
+enum language {
+  ENGLISH,
+  PORTUGUESE,
+  N_LANGUAGES
+};
+
+enum octave {
+  C,     // Dó,
+  CS,    // Dó sustenido,
+  D,     // Ré,
+  DS,    // Ré sustenido,
+  E,     // Mi,
+  F,     // Fá,
+  FS,    // Fá sustenido,
+  G,     // Sol,
+  GS,    // Sol sustenido,
+  A,     // Lá,
+  AS,    // Lá sustenido,
+  B,     // Si.
+  OCTAVE // Chromatic scale length (12).
+};
+
+char *note_names[N_LANGUAGES][OCTAVE] = {
+  { "C",   "C#",  "D",    "D#",  "E",   "F",
+    "F#",  "G",   "G#",   "A",   "A#",  "B" },
+  { "Dó",  "Dó#", "Ré",   "Ré#", "Mi",  "Fá",
+    "Fá#", "Sol", "Sol#", "Lá",  "Lá#", "Si" }
+};
+
+void
+init(void) {
+  InitAudioDevice();
+  InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, PROGRAM_TITLE);
+  SetWindowPosition(WINDOW_POS_X, WINDOW_POS_Y);
+  SetTargetFPS(60);
+}
 
 void
 handle_keyboard(int pressed_once[], int pressed[], int len) {
@@ -17,12 +74,16 @@ handle_keyboard(int pressed_once[], int pressed[], int len) {
 }
 
 Sound *
-getsound(const char *file_fmt, int idx) {
+get_sound(const char *file_fmt, int idx) {
   enum { maxlen = 128 };
   Sound *sound = malloc(sizeof (Sound));
   char file[maxlen];
   snprintf(file, maxlen, file_fmt, idx);
   *sound = LoadSound(file);
+  if (!sound->frameCount) // NOTE: I don't know if this
+                          // is a safe way to check
+                          // if sound is ok.
+    exit(1);
   return sound;
 }
 
@@ -31,7 +92,7 @@ play(int notes[], int len, Sound *sounds[], const char *file_fmt) {
   for (int i=0; notes[i] && i<len; i++) {
     Sound *sound = sounds[notes[i] - 1];
     if (!sound) {
-      sound = getsound(file_fmt, notes[i]);
+      sound = get_sound(file_fmt, notes[i]);
       sounds[notes[i] - 1] = sound;
     }
     PlaySoundMulti(*sound);
@@ -78,33 +139,36 @@ key_to_note(int key) {
   }                          // 88 is C8.
 }
 
+void
+get_note(char str[NOTE_NAME_MAXLEN], int note, enum language lang) {
+  enum { c0 = 4 }; // C0 is the first C and the fourth key in a 88-key piano.
+  int octave_note = (note - c0) % OCTAVE; // FIXME: Corner case when `(note - c0)` is negative
+  snprintf(str, NOTE_NAME_MAXLEN, "%s%u", note_names[lang][octave_note], ((note - c0) / OCTAVE) + 1);
+}
+
+void
+cleanup(Sound *sounds[][PIANO_KEYS]) {
+  CloseWindow();
+  StopSoundMulti();
+  for (int i=0; i<N_INSTRUMENTS; i++)
+    for (int j=0; j<PIANO_KEYS; j++)
+      if (sounds[i][j]) {
+        UnloadSound(*sounds[i][j]);
+        free(sounds[i][j]);
+      }
+  CloseAudioDevice();
+}
+
 int
 main() {
-  enum item {
-    PIANO,
-    GUITAR,
-    N_INSTRUMENTS,
-    MUSICAL_NOTATION,
-    CIRCLE_OF_FIFTHS,
-    INPUT_OUTPUT_FIELD,
-    N_ITEMS
-  };
-  enum scalar {
-    HUMAN_FINGERS = 10,
-    PIANO_KEYS = 88
-  };
-  int pressed_once[HUMAN_FINGERS] = {0};
-  int pressed[HUMAN_FINGERS] = {0};
   int notes[HUMAN_FINGERS] = {0};
-  enum item focused = PIANO;
+  int pressed[HUMAN_FINGERS] = {0};
+  int pressed_once[HUMAN_FINGERS] = {0};
   Sound *sounds[N_INSTRUMENTS][PIANO_KEYS] = {0};
   const char *sound_file_fmts[N_INSTRUMENTS] = {
-    "resources/sounds/piano-88-keys/%02d.mp3", NULL
-  };
-  InitAudioDevice();
-  InitWindow(640, 480, PROGRAM_TITLE);
-  SetWindowPosition(20, 60);
-  SetTargetFPS(60);
+    "resources/sounds/piano-88-keys/%02d.mp3", NULL };
+  enum item focused = PIANO;
+  init();
   while (!WindowShouldClose()) {
     handle_keyboard(pressed_once, pressed, HUMAN_FINGERS);
     switch (focused) {
@@ -112,26 +176,21 @@ main() {
     case GUITAR:
       for (int i=0; i<HUMAN_FINGERS; i++) {
         notes[i] = key_to_note(pressed_once[i]);
-        if (notes[i])
-          printf("%d ", notes[i]); /* DEBUG */
+        if (notes[i]) {
+          char name[NOTE_NAME_MAXLEN];
+          get_note(name, notes[i], PORTUGUESE);
+          printf("%s ", name);
+        }
       }
-      if (notes[0]) {              /* DEBUG */
+      if (notes[0]) {
         putchar('\n');
         play(notes, HUMAN_FINGERS, sounds[focused], sound_file_fmts[focused]);
       }
+      // fall through
     default:
-      break;
+      draw();
     }
-    draw();
   }
-  StopSoundMulti();
-  CloseAudioDevice();
-  CloseWindow();
-  for (int i=0; i<N_INSTRUMENTS; i++)
-    for (int j=0; j<PIANO_KEYS; j++)
-      if (sounds[i][j]) {
-        UnloadSound(*sounds[i][j]);
-        free(sounds[i][j]);
-      }
+  cleanup(sounds);
   return 0;
 }
