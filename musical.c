@@ -48,7 +48,7 @@ enum octave {
   OCTAVE // Chromatic scale length (12).
 };
 
-char *note_names[N_LANGUAGES][OCTAVE] = {
+const char *note_names[N_LANGUAGES][OCTAVE] = {
   { "C",   "C#",  "D",    "D#",  "E",   "F",
     "F#",  "G",   "G#",   "A",   "A#",  "B" },
   { "Dó",  "Dó#", "Ré",   "Ré#", "Mi",  "Fá",
@@ -57,20 +57,37 @@ char *note_names[N_LANGUAGES][OCTAVE] = {
 
 void
 init(void) {
+  SetTraceLogLevel(LOG_WARNING);
   InitAudioDevice();
-  InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, PROGRAM_TITLE);
-  SetWindowPosition(WINDOW_POS_X, WINDOW_POS_Y);
+  InitWindow(WINDOW_WIDTH,
+             WINDOW_HEIGHT,
+             PROGRAM_TITLE);
+  SetWindowPosition(WINDOW_POS_X,
+                    WINDOW_POS_Y);
   SetTargetFPS(60);
 }
 
 void
-handle_keyboard(int pressed_once[], int pressed[], int len) {
-  for (int i=0, key; i<len; i++) {
+handle_keyboard(int pressed_once[HUMAN_FINGERS],
+                int pressed[HUMAN_FINGERS]) {
+  for (int i = 0, key; i < HUMAN_FINGERS; i++) {
     key = GetKeyPressed();
     pressed_once[i] = key;
     if (!IsKeyDown(pressed[i]))
       pressed[i] = key;
   }
+}
+
+void
+handle_input(int pressed_once[HUMAN_FINGERS],
+             int pressed[HUMAN_FINGERS]) {
+  handle_keyboard(pressed_once, pressed);
+}
+
+void
+die(const char *msg) {
+  fprintf(stderr, PROGRAM_NAME " crashed: %s\n", msg);
+  exit(1);
 }
 
 Sound *
@@ -83,13 +100,13 @@ get_sound(const char *file_fmt, int idx) {
   if (!sound->frameCount) // NOTE: I don't know if this
                           // is a safe way to check
                           // if sound is ok.
-    exit(1);
+    die("Sound file not found.");
   return sound;
 }
 
 void
 play(int notes[], int len, Sound *sounds[], const char *file_fmt) {
-  for (int i=0; notes[i] && i<len; i++) {
+  for (int i = 0; notes[i] && i < len; i++) {
     Sound *sound = sounds[notes[i] - 1];
     if (!sound) {
       sound = get_sound(file_fmt, notes[i]);
@@ -142,16 +159,21 @@ key_to_note(int key) {
 void
 get_note(char str[NOTE_NAME_MAXLEN], int note, enum language lang) {
   enum { c0 = 4 }; // C0 is the first C and the fourth key in a 88-key piano.
-  int octave_note = (note - c0) % OCTAVE; // FIXME: Corner case when `(note - c0)` is negative
-  snprintf(str, NOTE_NAME_MAXLEN, "%s%u", note_names[lang][octave_note], ((note - c0) / OCTAVE) + 1);
+  int octave_note = (note - c0) % OCTAVE; // FIXME: Corner case
+                                          // when `(note - c0)` is negative.
+  snprintf(str,
+           NOTE_NAME_MAXLEN,
+           "%s%u",
+           note_names[lang][octave_note],
+           ((note - c0) / OCTAVE) + 1);
 }
 
 void
-cleanup(Sound *sounds[][PIANO_KEYS]) {
+cleanup(Sound *sounds[N_INSTRUMENTS][PIANO_KEYS]) {
   CloseWindow();
   StopSoundMulti();
-  for (int i=0; i<N_INSTRUMENTS; i++)
-    for (int j=0; j<PIANO_KEYS; j++)
+  for (int i = 0; i < N_INSTRUMENTS; i++)
+    for (int j = 0; j < PIANO_KEYS; j++)
       if (sounds[i][j]) {
         UnloadSound(*sounds[i][j]);
         free(sounds[i][j]);
@@ -170,11 +192,11 @@ main() {
   enum item focused = PIANO;
   init();
   while (!WindowShouldClose()) {
-    handle_keyboard(pressed_once, pressed, HUMAN_FINGERS);
+    handle_input(pressed_once, pressed);
     switch (focused) {
     case PIANO:
     case GUITAR:
-      for (int i=0; i<HUMAN_FINGERS; i++) {
+      for (int i = 0; i < HUMAN_FINGERS; i++) {
         notes[i] = key_to_note(pressed_once[i]);
         if (notes[i]) {
           char name[NOTE_NAME_MAXLEN];
