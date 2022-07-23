@@ -1,7 +1,21 @@
+CC ?= gcc
+LD ?= $(CC)
+
+raylib_src := ./third-party/raylib/src
+libraylib  := $(raylib_src)/libraylib.a
+
+CFLAGS_DEBUG := -ggdb -O0
+CFLAGS_WARN  := -Wall -Wextra -Wpedantic
+CFLAGS       := -I$(raylib_src) -std=c99 $(CFLAGS_DEBUG) $(CFLAGS_WARN)
+LDFLAGS      := -L$(raylib_src) -lraylib -lm
+
 all: musical
 
-musical: musical.c
-	gcc -o $@ $^ -std=c99 -ggdb -O0 -lraylib -lm -Wall -Wextra -Wpedantic
+$(libraylib):
+	$(MAKE) -C $(raylib_src) PLATFORM=PLATFORM_DESKTOP
+
+musical: musical.c $(libraylib)
+	$(CC) -o $@ $< $(CFLAGS) $(LDFLAGS)
 
 run: all
 	@./musical

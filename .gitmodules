@@ -1,0 +1,6 @@
+[submodule "third-party/raylib.wiki"]
+	path = third-party/raylib.wiki
+	url = https://github.com/raysan5/raylib.wiki.git
+[submodule "third-party/raylib"]
+	path = third-party/raylib
+	url = https://github.com/raysan5/raylib.git
