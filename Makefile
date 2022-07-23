@@ -13,7 +13,7 @@ all: musical
 $(libraylib):
 	$(MAKE) -C $(raylib_src) PLATFORM=PLATFORM_DESKTOP
 
-musical: musical.c $(libraylib)
+musical: musical.c musical.h $(libraylib)
 	$(CC) -o $@ $< $(CFLAGS) $(LDFLAGS)
 
 run: all

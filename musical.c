@@ -3,57 +3,7 @@
 
 #include "raylib.h"
 
-#define PROGRAM_TITLE "Musical"
-#define PROGRAM_NAME  "musical"
-
-enum item {
-  PIANO,
-  GUITAR,
-  N_INSTRUMENTS,
-  MUSICAL_NOTATION,
-  CIRCLE_OF_FIFTHS,
-  INPUT_OUTPUT_FIELD,
-  N_ITEMS
-};
-
-enum scalar {
-  WINDOW_WIDTH  = 640,
-  WINDOW_HEIGHT = 480,
-  WINDOW_POS_X  = 20,
-  WINDOW_POS_Y  = 60,
-  HUMAN_FINGERS = 10,
-  PIANO_KEYS    = 88,
-  NOTE_NAME_MAXLEN = 6 // Including null char.
-};
-
-enum language {
-  ENGLISH,
-  PORTUGUESE,
-  N_LANGUAGES
-};
-
-enum octave {
-  C,     // Dó,
-  CS,    // Dó sustenido,
-  D,     // Ré,
-  DS,    // Ré sustenido,
-  E,     // Mi,
-  F,     // Fá,
-  FS,    // Fá sustenido,
-  G,     // Sol,
-  GS,    // Sol sustenido,
-  A,     // Lá,
-  AS,    // Lá sustenido,
-  B,     // Si.
-  OCTAVE // Chromatic scale length (12).
-};
-
-const char *note_names[N_LANGUAGES][OCTAVE] = {
-  { "C",   "C#",  "D",    "D#",  "E",   "F",
-    "F#",  "G",   "G#",   "A",   "A#",  "B" },
-  { "Dó",  "Dó#", "Ré",   "Ré#", "Mi",  "Fá",
-    "Fá#", "Sol", "Sol#", "Lá",  "Lá#", "Si" }
-};
+#include "musical.h"
 
 void
 init(void) {
@@ -90,39 +40,6 @@ die(const char *msg) {
   exit(1);
 }
 
-Sound *
-get_sound(const char *file_fmt, int idx) {
-  enum { maxlen = 128 };
-  Sound *sound = malloc(sizeof (Sound));
-  char file[maxlen];
-  snprintf(file, maxlen, file_fmt, idx);
-  *sound = LoadSound(file);
-  if (!sound->frameCount) // NOTE: I don't know if this
-                          // is a safe way to check
-                          // if sound is ok.
-    die("Sound file not found.");
-  return sound;
-}
-
-void
-play(int notes[], int len, Sound *sounds[], const char *file_fmt) {
-  for (int i = 0; notes[i] && i < len; i++) {
-    Sound *sound = sounds[notes[i] - 1];
-    if (!sound) {
-      sound = get_sound(file_fmt, notes[i]);
-      sounds[notes[i] - 1] = sound;
-    }
-    PlaySoundMulti(*sound);
-  }
-}
-
-void
-draw(void) {
-  BeginDrawing();
-  ClearBackground(BLUE);
-  EndDrawing();
-}
-
 int
 key_to_note(int key) {
   switch (key) {             // 1 is A0,
@@ -156,16 +73,55 @@ key_to_note(int key) {
   }                          // 88 is C8.
 }
 
+Sound *
+get_sound(const char *file_fmt, int idx) {
+  enum { maxlen = 128 };
+  Sound *sound = malloc(sizeof (Sound));
+  char file[maxlen];
+  snprintf(file, maxlen, file_fmt, idx);
+  *sound = LoadSound(file);
+  if (!sound->frameCount) {
+    free(sound);
+    die("Sound file not found. Try executing inside the build directory.");
+  }
+  return sound;
+}
+
 void
 get_note(char str[NOTE_NAME_MAXLEN], int note, enum language lang) {
   enum { c0 = 4 }; // C0 is the first C and the fourth key in a 88-key piano.
   int octave_note = (note - c0) % OCTAVE; // FIXME: Corner case
                                           // when `(note - c0)` is negative.
-  snprintf(str,
-           NOTE_NAME_MAXLEN,
-           "%s%u",
-           note_names[lang][octave_note],
+  snprintf(str, NOTE_NAME_MAXLEN,
+           "%s%u", note_names[lang][octave_note],
            ((note - c0) / OCTAVE) + 1);
+}
+
+void
+play_instrument(int keys[HUMAN_FINGERS], int notes[HUMAN_FINGERS],
+                Sound *sounds[], const char *file_fmt) {
+  int i, j;
+  char name[NOTE_NAME_MAXLEN];
+  for (i = j = 0; j < HUMAN_FINGERS; j++) {
+    notes[i] = key_to_note(keys[j]);
+    if (!notes[i])
+      continue;
+    if (!sounds[notes[i] - 1])
+      sounds[notes[i] - 1] = get_sound(file_fmt, notes[i]);
+    PlaySoundMulti(*sounds[notes[i] - 1]);
+    get_note(name, notes[i], PORTUGUESE);
+    printf("%s ", name);
+    i++;
+  }
+  if (notes[0])
+    putchar('\n');
+}
+
+void
+draw(void) {
+  BeginDrawing();
+  ClearBackground(BLUE);
+  EndDrawing();
 }
 
 void
@@ -196,18 +152,8 @@ main() {
     switch (focused) {
     case PIANO:
     case GUITAR:
-      for (int i = 0; i < HUMAN_FINGERS; i++) {
-        notes[i] = key_to_note(pressed_once[i]);
-        if (notes[i]) {
-          char name[NOTE_NAME_MAXLEN];
-          get_note(name, notes[i], PORTUGUESE);
-          printf("%s ", name);
-        }
-      }
-      if (notes[0]) {
-        putchar('\n');
-        play(notes, HUMAN_FINGERS, sounds[focused], sound_file_fmts[focused]);
-      }
+      play_instrument(pressed_once, notes,
+                      sounds[focused], sound_file_fmts[focused]);
       // fall through
     default:
       draw();
