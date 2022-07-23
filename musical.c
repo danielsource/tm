@@ -40,6 +40,30 @@ die(const char *msg) {
   exit(1);
 }
 
+Sound *
+get_sound(const char *file_fmt, int idx) {
+  enum { maxlen = 128 };
+  Sound *sound = malloc(sizeof (Sound));
+  char file[maxlen];
+  snprintf(file, maxlen, file_fmt, idx);
+  *sound = LoadSound(file);
+  if (!sound->frameCount) {
+    free(sound);
+    die("Sound file not found. Try executing inside the build directory.");
+  }
+  return sound;
+}
+
+void
+get_note(char str[NOTE_NAME_MAXLEN], int note, enum language lang) {
+  enum { c0 = 4 }; // C0 is the first C and the fourth key in a 88-key piano.
+  int octave_note = (note - c0) % OCTAVE; // FIXME: Corner case
+                                          // when `(note - c0)` is negative.
+  snprintf(str, NOTE_NAME_MAXLEN,
+           "%s%u", note_names[lang][octave_note],
+           ((note - c0) / OCTAVE) + 1);
+}
+
 int
 key_to_note(int key) {
   switch (key) {             // 1 is A0,
@@ -73,30 +97,6 @@ key_to_note(int key) {
   }                          // 88 is C8.
 }
 
-Sound *
-get_sound(const char *file_fmt, int idx) {
-  enum { maxlen = 128 };
-  Sound *sound = malloc(sizeof (Sound));
-  char file[maxlen];
-  snprintf(file, maxlen, file_fmt, idx);
-  *sound = LoadSound(file);
-  if (!sound->frameCount) {
-    free(sound);
-    die("Sound file not found. Try executing inside the build directory.");
-  }
-  return sound;
-}
-
-void
-get_note(char str[NOTE_NAME_MAXLEN], int note, enum language lang) {
-  enum { c0 = 4 }; // C0 is the first C and the fourth key in a 88-key piano.
-  int octave_note = (note - c0) % OCTAVE; // FIXME: Corner case
-                                          // when `(note - c0)` is negative.
-  snprintf(str, NOTE_NAME_MAXLEN,
-           "%s%u", note_names[lang][octave_note],
-           ((note - c0) / OCTAVE) + 1);
-}
-
 void
 play_instrument(int keys[HUMAN_FINGERS], int notes[HUMAN_FINGERS],
                 Sound *sounds[], const char *file_fmt) {
@@ -106,7 +106,8 @@ play_instrument(int keys[HUMAN_FINGERS], int notes[HUMAN_FINGERS],
     notes[i] = key_to_note(keys[j]);
     if (!notes[i])
       continue;
-    if (!sounds[notes[i] - 1])
+    if (!sounds[notes[i] - 1]) // We need to decrement by one
+                               // because `notes` have 1-based indexing.
       sounds[notes[i] - 1] = get_sound(file_fmt, notes[i]);
     PlaySoundMulti(*sounds[notes[i] - 1]);
     get_note(name, notes[i], PORTUGUESE);
